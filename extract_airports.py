@@ -3,7 +3,7 @@ import sys
 
 def main():
     # Default values for input/output paths
-    input_file = 'data/flights.csv'
+    input_file = 'data/flights_cleaned.csv'
     output_file = 'data/airports.csv'
 
     # Allow path override via command line arguments
