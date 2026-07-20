@@ -18,6 +18,7 @@ from typing import Optional
 import pandas as pd
 
 DEFAULT_DATA_PATH = Path(__file__).resolve().parent / "data" / "flights_cleaned.csv"
+DEFAULT_SAVE_PATH = Path(__file__).resolve().parent / "flight_delay_model.pkl"
 
 # Columns used to identify a unique "flight context".
 GROUP_KEYS = ["Year", "Month", "DayofMonth", "OriginAirportID", "DestAirportID"]
@@ -60,6 +61,29 @@ class FlightDelayModel:
         # Build an indexed lookup for fast querying.
         self._lookup = grouped.set_index(GROUP_KEYS)
         return grouped
+
+    def save(self, path: str | Path | None = None) -> Path:
+        """Persist the fitted model data to disk as a pickle file.
+
+        Args:
+            path: Destination file path. When omitted, `None`, or an empty
+                string, the model is written to `DEFAULT_SAVE_PATH` next to
+                this module (`flight_delay_model.pkl`).
+
+        Returns:
+            The resolved `Path` where the model was written.
+
+        Raises:
+            RuntimeError: If called before `fit()` has produced model data.
+        """
+        if not path:
+            path = DEFAULT_SAVE_PATH
+        out_path = Path(path)
+        if self._probabilities is None:
+            raise RuntimeError("No model data to save. Call fit() first.")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        self._probabilities.to_pickle(out_path)
+        return out_path
 
     def get_delay_probability(
         self,
